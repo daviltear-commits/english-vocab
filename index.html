@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>내 영어 단어장</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --sky:#3B9EE8;--sky-soft:#EAF4FD;--sky-mid:#A8D4F5;
+  --green:#4BAE8A;--green-soft:#E6F7F1;--green-mid:#A8DFD0;
+  --amber:#F5A623;--amber-soft:#FEF5E7;
+  --red:#E85C5C;--red-soft:#FDEAEA;
+  --purple:#8B70D8;--purple-soft:#F0ECFB;
+  --orange:#F07830;--orange-soft:#FEF0E8;
+  --pink:#E05FA0;--pink-soft:#FDF0F7;
+  --bg:#F7F9FC;--surface:#FFFFFF;--border:#E4ECF5;
+  --text:#1A2638;--text-muted:#7A8FA8;--text-light:#C0CBDA;
+  --radius:16px;--radius-sm:10px;
+  --shadow:0 4px 24px rgba(59,158,232,0.08);--shadow-md:0 8px 32px rgba(59,158,232,0.13);
+}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.header{background:linear-gradient(135deg,#3B9EE8 0%,#6BC5F8 100%);padding:24px 20px 52px;text-align:center;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.1)}
+.header::after{content:'';position:absolute;bottom:-60px;left:-30px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,0.07)}
+.header-title{font-family:'Nunito',sans-serif;font-size:26px;font-weight:800;color:white;letter-spacing:-0.5px}
+.header-sub{font-size:13px;color:rgba(255,255,255,0.8);margin-top:4px}
+.stats-row{display:flex;gap:8px;padding:0 16px;margin-top:-28px;margin-bottom:18px;position:relative;z-index:10}
+.stat-card{flex:1;background:var(--surface);border-radius:var(--radius-sm);padding:12px 6px;text-align:center;box-shadow:var(--shadow);border:1px solid var(--border)}
+.stat-num{font-family:'Nunito',sans-serif;font-size:20px;font-weight:800}
+.stat-label{font-size:10px;color:var(--text-muted);margin-top:2px}
+.stat-card.s1 .stat-num{color:var(--sky)}.stat-card.s2 .stat-num{color:var(--text-muted)}.stat-card.s3 .stat-num{color:var(--green)}.stat-card.s4 .stat-num{color:var(--amber)}
+.tab-bar{display:flex;background:var(--surface);border-radius:var(--radius);margin:0 16px 18px;padding:4px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.tab-btn{flex:1;padding:9px 4px;border:none;border-radius:12px;background:transparent;font-family:'Noto Sans KR',sans-serif;font-size:11px;font-weight:500;color:var(--text-muted);cursor:pointer;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;gap:2px}
+.tab-btn .icon{font-size:16px}
+.tab-btn.active{background:var(--sky);color:white;box-shadow:0 4px 12px rgba(59,158,232,0.3)}
+.section{display:none;padding:0 16px 100px}.section.active{display:block}
+.search-wrap{position:relative;margin-bottom:10px}
+.search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--text-muted)}
+.search-input{width:100%;padding:10px 12px 10px 38px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Noto Sans KR',sans-serif;font-size:13px;background:var(--surface);color:var(--text);outline:none;transition:border-color 0.2s}
+.search-input:focus{border-color:var(--sky)}
+.filter-row{display:flex;gap:5px;margin-bottom:12px;flex-wrap:wrap}
+.filter-btn{padding:5px 11px;border:1px solid var(--border);border-radius:20px;background:var(--surface);font-size:11px;color:var(--text-muted);cursor:pointer;transition:all 0.15s;font-family:'Noto Sans KR',sans-serif}
+.filter-btn.active{background:var(--sky);border-color:var(--sky);color:white}
+.tip-box{background:var(--sky-soft);border:1px solid var(--sky-mid);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:12px;font-size:12px;color:#2672B0;line-height:1.7}
+.word-list{display:flex;flex-direction:column;gap:8px}
+.word-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;transition:all 0.18s;animation:fadeIn 0.2s ease}
+.word-item:hover{border-color:var(--green-mid);box-shadow:var(--shadow)}
+.word-main{display:flex;align-items:center;gap:9px;padding:12px 12px;cursor:pointer}
+.memorize-hint{font-size:11px;color:var(--green);opacity:0;transition:opacity 0.2s;font-weight:600;white-space:nowrap}
+.word-main:hover .memorize-hint{opacity:1}
+.word-item.memorized .word-main{background:var(--green-soft)}
+.word-item.memorized .word-en{color:var(--green)}
+.word-item.memorized .memorize-hint{color:var(--text-muted)}
+.mnemonic-panel{background:var(--pink-soft);border-top:1px solid #F0B0D0;padding:10px 14px;display:none}
+.mnemonic-panel.open{display:block}
+.mnemonic-sound{font-size:13px;color:var(--pink);font-weight:700;margin-bottom:4px}
+.mnemonic-story{font-size:13px;color:var(--text);line-height:1.7}
+.mnemonic-story b{color:var(--pink)}
+.mnemonic-toggle{background:var(--pink-soft);border:none;border-top:1px solid #F0C0D8;width:100%;padding:7px;font-size:12px;color:var(--pink);cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:600;transition:background 0.15s;display:flex;align-items:center;justify-content:center;gap:4px}
+.mnemonic-toggle:hover{background:#FADCEE}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes slideOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(40px)}}
+.sliding-out{animation:slideOut 0.25s ease forwards}
+.level-badge{font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;white-space:nowrap;flex-shrink:0}
+.lvl-mid1{background:#E8F4FD;color:#2E86C1}.lvl-mid2{background:#E8F8F5;color:#1E8449}.lvl-mid3{background:#FEF9E7;color:#B7770D}
+.lvl-hi1{background:#FEF5E7;color:#CA6F1E}.lvl-hi2{background:#FDEDEC;color:#C0392B}.lvl-hi3{background:#F5EEF8;color:#7D3C98}
+.lvl-custom{background:#F4F4F4;color:#777}
+.word-en{font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;color:var(--text);min-width:80px;flex-shrink:0}
+.word-ko{font-size:12px;color:var(--text-muted);flex:1;line-height:1.4}
+.sr-info{font-size:11px;color:var(--text-light);white-space:nowrap;flex-shrink:0}
+.sr-info.due-now{color:var(--red);font-weight:700}
+.speak-btn{background:var(--sky-soft);border:none;border-radius:7px;padding:5px 8px;color:var(--sky);font-size:13px;cursor:pointer;transition:all 0.15s;flex-shrink:0}
+.speak-btn:hover{background:var(--sky);color:white}
+.del-btn{background:none;border:none;color:var(--text-light);font-size:16px;cursor:pointer;padding:2px 3px;line-height:1;transition:color 0.15s;flex-shrink:0}
+.del-btn:hover{color:var(--red)}
+.section-label{font-size:12px;font-weight:700;color:var(--text-muted);padding:14px 2px 8px;display:flex;align-items:center;gap:8px}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.empty{text-align:center;padding:28px 20px;color:var(--text-muted);font-size:13px}
+.empty .big{font-size:34px;margin-bottom:8px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px;box-shadow:var(--shadow)}
+.card-title{font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;color:var(--text);margin-bottom:13px;display:flex;align-items:center;gap:7px}
+.input-row{display:flex;gap:7px;margin-bottom:8px}
+.text-input{flex:1;padding:10px 13px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Noto Sans KR',sans-serif;font-size:13px;background:var(--bg);color:var(--text);outline:none;transition:border-color 0.2s}
+.text-input:focus{border-color:var(--sky);background:white}
+.btn-add{padding:10px 16px;background:var(--sky);color:white;border:none;border-radius:var(--radius-sm);font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}
+.add-msg{font-size:12px;min-height:18px;margin-top:3px;padding-left:3px}
+.level-tabs{display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap}
+.level-tab{padding:5px 10px;border:1px solid var(--border);border-radius:20px;background:var(--surface);font-size:11px;color:var(--text-muted);cursor:pointer;transition:all 0.15s;font-family:'Noto Sans KR',sans-serif}
+.level-tab.active{border-color:var(--sky);color:var(--sky);background:var(--sky-soft)}
+.default-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;max-height:300px;overflow-y:auto}
+.default-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:4px}
+.default-en{font-family:'Nunito',sans-serif;font-size:12px;font-weight:700}
+.default-ko{font-size:11px;color:var(--text-muted)}
+.add-small{background:var(--sky-soft);border:none;border-radius:6px;padding:3px 8px;color:var(--sky);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all 0.15s;font-family:'Nunito',sans-serif;flex-shrink:0}
+.add-small:hover:not(:disabled){background:var(--sky);color:white}
+.add-small.added{background:var(--green-soft);color:var(--green);cursor:default}
+.quiz-mode-row{display:flex;gap:7px;margin-bottom:12px}
+.mode-btn{flex:1;padding:9px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);font-family:'Noto Sans KR',sans-serif;font-size:12px;color:var(--text-muted);cursor:pointer;transition:all 0.18s;font-weight:500}
+.mode-btn.active{background:var(--purple-soft);border-color:var(--purple);color:var(--purple);font-weight:700}
+.sr-panel{background:var(--orange-soft);border:1px solid #FBBF8A;border-radius:var(--radius-sm);padding:11px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.sr-title{font-size:13px;font-weight:700;color:var(--orange)}.sr-desc{font-size:11px;color:var(--text-muted);margin-top:1px}
+.sr-count{font-family:'Nunito',sans-serif;font-size:22px;font-weight:800;color:var(--orange);margin-left:auto}
+.score-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.score-text{font-size:12px;color:var(--text-muted)}.score-num{font-family:'Nunito',sans-serif;font-weight:800;color:var(--sky);font-size:15px}
+.progress-track{height:6px;background:var(--border);border-radius:3px;margin-bottom:16px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--sky),var(--green));border-radius:3px;transition:width 0.4s ease}
+.quiz-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px 18px;text-align:center;margin-bottom:12px;box-shadow:var(--shadow-md)}
+.quiz-hint{font-size:12px;color:var(--text-muted);margin-bottom:7px}
+.quiz-meta{margin-bottom:9px}
+.quiz-level{display:inline-block;font-size:11px;padding:2px 9px;border-radius:10px}
+.sr-tag{display:inline-block;margin-left:6px;font-size:11px;padding:2px 8px;border-radius:8px;background:var(--red-soft);color:var(--red);font-weight:700}
+.quiz-word{font-family:'Nunito',sans-serif;font-size:30px;font-weight:800;color:var(--text);letter-spacing:-1px;margin-bottom:10px;word-break:break-word}
+.quiz-speak{background:var(--sky-soft);border:none;border-radius:18px;padding:6px 14px;color:var(--sky);font-size:12px;cursor:pointer;transition:all 0.15s;font-family:'Noto Sans KR',sans-serif;font-weight:500}
+.quiz-speak:hover{background:var(--sky);color:white}
+.mnemonic-hint-box{background:var(--pink-soft);border:1px solid #F0B0D0;border-radius:var(--radius-sm);padding:10px 14px;margin:10px 0;text-align:left;display:none}
+.mnemonic-hint-box.show{display:block}
+.mh-label{font-size:11px;font-weight:700;color:var(--pink);margin-bottom:4px}
+.mh-sound{font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px}
+.mh-story{font-size:12px;color:var(--text-muted);line-height:1.6}
+.mh-story b{color:var(--pink)}
+.hint-toggle-btn{background:none;border:1px solid #F0B0D0;border-radius:20px;padding:5px 14px;color:var(--pink);font-size:12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:600;margin:6px auto;display:block;transition:all 0.15s}
+.hint-toggle-btn:hover{background:var(--pink-soft)}
+.options-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.opt-btn{padding:13px 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:500;color:var(--text);cursor:pointer;transition:all 0.18s;line-height:1.4}
+.opt-btn:hover:not(:disabled){border-color:var(--sky);background:var(--sky-soft);color:var(--sky);transform:translateY(-2px)}
+.opt-btn.correct{background:var(--green-soft);border-color:var(--green);color:var(--green)}
+.opt-btn.wrong{background:var(--red-soft);border-color:var(--red);color:var(--red)}
+.opt-btn:disabled{cursor:default;transform:none!important}
+.result-msg{text-align:center;padding:10px;border-radius:var(--radius-sm);font-size:14px;font-weight:700;margin-bottom:7px;display:none;animation:fadeIn 0.2s}
+.result-msg.correct{background:var(--green-soft);color:var(--green)}
+.result-msg.wrong{background:var(--red-soft);color:var(--red)}
+.post-mnemonic{background:var(--pink-soft);border:1px solid #F0B0D0;border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:10px;display:none;text-align:left}
+.post-mnemonic.show{display:block;animation:fadeIn 0.3s}
+.pm-title{font-size:12px;font-weight:700;color:var(--pink);margin-bottom:4px}
+.pm-sound{font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px}
+.pm-story{font-size:12px;color:var(--text-muted);line-height:1.6}
+.pm-story b{color:var(--pink)}
+.sr-feedback{text-align:center;font-size:12px;margin-bottom:10px;display:none}
+.btn-next{width:100%;padding:13px;background:linear-gradient(135deg,var(--sky),#6BC5F8);color:white;border:none;border-radius:var(--radius-sm);font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;cursor:pointer;display:none;transition:all 0.18s}
+.btn-next:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(59,158,232,0.35)}
+.quiz-empty{text-align:center;padding:32px 20px;color:var(--text-muted);font-size:13px;line-height:1.8}
+.quiz-empty .big{font-size:36px;margin-bottom:10px}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-title">📚 내 영어 단어장</div>
+  <div class="header-sub">중1~고3 · 240개 전체 연상 암기법 + 간격 반복</div>
+</div>
+<div class="stats-row">
+  <div class="stat-card s1"><div class="stat-num" id="s-total">0</div><div class="stat-label">전체 단어</div></div>
+  <div class="stat-card s2"><div class="stat-num" id="s-learning">0</div><div class="stat-label">학습 중</div></div>
+  <div class="stat-card s3"><div class="stat-num" id="s-memorized">0</div><div class="stat-label">✅ 외운 단어</div></div>
+  <div class="stat-card s4"><div class="stat-num" id="s-streak">0</div><div class="stat-label">🔥 연속일</div></div>
+</div>
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('list')"><span class="icon">📖</span>단어장</button>
+  <button class="tab-btn" onclick="switchTab('memorized')"><span class="icon">✅</span>외운 단어</button>
+  <button class="tab-btn" onclick="switchTab('add')"><span class="icon">➕</span>추가</button>
+  <button class="tab-btn" onclick="switchTab('quiz')"><span class="icon">🎯</span>퀴즈</button>
+</div>
+
+<div id="tab-list" class="section active">
+  <div class="tip-box">💡 단어를 <b>클릭</b>하면 외운 단어로 이동해요.<br>🧠 <b style="color:var(--pink)">분홍 힌트 버튼</b>으로 연상 이미지 암기법을 확인하세요!</div>
+  <div class="search-wrap"><span class="search-icon">🔍</span><input class="search-input" id="searchInput" placeholder="단어 검색..." oninput="renderList()"></div>
+  <div class="filter-row">
+    <button class="filter-btn active" onclick="setFilter('all',this)">전체</button>
+    <button class="filter-btn" onclick="setFilter('mid1',this)">중1</button>
+    <button class="filter-btn" onclick="setFilter('mid2',this)">중2</button>
+    <button class="filter-btn" onclick="setFilter('mid3',this)">중3</button>
+    <button class="filter-btn" onclick="setFilter('hi1',this)">고1</button>
+    <button class="filter-btn" onclick="setFilter('hi2',this)">고2</button>
+    <button class="filter-btn" onclick="setFilter('hi3',this)">고3</button>
+  </div>
+  <div class="word-list" id="wordList"></div>
+</div>
+
+<div id="tab-memorized" class="section">
+  <div class="tip-box" style="background:var(--green-soft);border-color:var(--green-mid);color:#2E7D5E">💡 단어를 <b>클릭</b>하면 다시 학습 중으로 돌아가요. 퀴즈는 이 목록에서 출제돼요!</div>
+  <div class="search-wrap"><span class="search-icon">🔍</span><input class="search-input" id="searchMemorized" placeholder="외운 단어 검색..." oninput="renderMemorized()"></div>
+  <div class="word-list" id="memorizedList"></div>
+</div>
+
+<div id="tab-add" class="section">
+  <div class="card">
+    <div class="card-title">✏️ 직접 추가하기</div>
+    <div class="input-row">
+      <input class="text-input" id="inEn" placeholder="영어" onkeydown="if(event.key==='Enter')document.getElementById('inKo').focus()">
+      <input class="text-input" id="inKo" placeholder="한국어 뜻" onkeydown="if(event.key==='Enter')addWord()">
+      <button class="btn-add" onclick="addWord()">추가</button>
+    </div>
+    <div class="add-msg" id="addMsg"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">📋 수준별 단어 모음</div>
+    <div class="level-tabs" id="levelTabs"></div>
+    <div class="default-grid" id="defaultGrid"></div>
+  </div>
+</div>
+
+<div id="tab-quiz" class="section">
+  <div id="quizArea"></div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   연상 이미지 암기법 — 240개 전체
+   제임스 한 방식: 발음 연상 + 이미지 스토리
+══════════════════════════════════════════ */
+var MN = {
+  /* ── 중1 (39개) ── */
+  'absent':    {s:'압생트',    t:'**압생트** 술을 마셔서 학교에 **결석**했다'},
+  'arrive':    {s:'아 라이브', t:'아, **라이브** 공연장에 드디어 **도착**했다!'},
+  'borrow':    {s:'바로',      t:'**바로** 지금 돈을 **빌렸다**'},
+  'careful':   {s:'케어풀',    t:'케어(care=돌봄)가 풀(full)하면 **조심스럽다**'},
+  'certainly': {s:'써튼리',    t:'써튼(certain=확실)하게 리(ly) — **확실히** 맞아!'},
+  'change':    {s:'체인지',    t:'체인(chain=쇠사슬)이 지(지는) — 쇠사슬이 **바뀌다**'},
+  'choose':    {s:'추-즈',     t:'치즈 중에서 하나를 **선택**해야 해 — 추~즈'},
+  'collect':   {s:'컬렉트',    t:'**컬렉션**을 만들려면 **모아야** 해'},
+  'contact':   {s:'콘택트',    t:'**콘택트** 렌즈 받으려고 **연락**했다'},
+  'correct':   {s:'커렉트',    t:'크게 레고를 **수정**해서 **올바르게** 만들다'},
+  'create':    {s:'크리에이트',t:'**크리에이터**처럼 새걸 **창조**하다'},
+  'different': {s:'디퍼런트',  t:'디퍼(differ=다르다) — 이건 완전히 **다른** 것!'},
+  'difficult': {s:'디피컬트',  t:'디(d) 피(피땀) 컬트 — 피땀 흘려야 할 만큼 **어려운**'},
+  'discover':  {s:'디스커버',  t:'뚜껑(**커버**)을 열어(**디스**) **발견**하다'},
+  'enjoy':     {s:'엔조이',    t:'n(엔) joy(기쁨) — 기쁨 속에서 **즐기다**'},
+  'environment':{s:'인바이런먼트',t:'인(in=안) 바이(by=옆) 런먼트 — 주변 **환경**'},
+  'example':   {s:'이그잼플',  t:'이(e) 그(그) 잼(jam=잼) — 잼처럼 달콤한 **예시**'},
+  'excited':   {s:'익사이티드',t:'익(익) 사(사) 이티드 — 이(이야!) **신이 난**!'},
+  'experience':{s:'익스피어리언스',t:'익스(ex) 피어(peer=경험자) — 경험자가 된 **경험**'},
+  'explain':   {s:'익스플레인',t:'X(**엑스**)를 그리며 **설명**하다'},
+  'favorite':  {s:'페이버릿',  t:'페이(pay=지불) 버릿 — 돈 내고 사는 **가장 좋아하는**'},
+  'festival':  {s:'페스티벌',  t:'**페스티벌** — 다 같이 모이는 **축제**'},
+  'finish':    {s:'피니쉬',    t:'피(피가) 니(니까) 쉬(쉬어야) — 다 **끝냈다** 쉬자!'},
+  'foreign':   {s:'포린',      t:'포(포도) 린(린이) — 린이에겐 낯선 **외국의**'},
+  'forget':    {s:'포겟',      t:'포(포기) 겟(get) — 가지려다 **잊어버렸다**'},
+  'future':    {s:'퓨처',      t:'퓨(fuse=점화) 처 — 불꽃이 점화될 **미래**'},
+  'healthy':   {s:'헬씨',      t:'헬(hell=지옥) 씨 — 지옥도 피하는 **건강한**'},
+  'history':   {s:'히스토리',  t:'his(그의) story(이야기) — 그의 이야기, **역사**'},
+  'honest':    {s:'어니스트',  t:'어(어머) 니 스트레스 없이 — **정직하게** 말해'},
+  'important': {s:'임포턴트',  t:'임금님도 포(포도)를 돌아봄 — **중요**해'},
+  'introduce': {s:'인트로듀스',t:'**인트로**(intro=시작) 뒤에 **소개**하다'},
+  'invite':    {s:'인바이트',  t:'인(in=안으로) 바이트(bite=물다) — 안으로 **초대**해 물어당기다'},
+  'join':      {s:'조인',      t:'조(조각) 인(인형) — 조각 인형처럼 **참가**하다'},
+  'journey':   {s:'저니',      t:'저 넓은 곳으로 떠나는 **여정** — 저니'},
+  'knowledge': {s:'놀리지',    t:'놀(놀다)면서 능선(ridge)을 오르며 얻은 **지식**'},
+  'language':  {s:'랭귀지',    t:'랭(lang=긴) 귀(귀) 지 — 긴 귀로 듣는 **언어**'},
+  'message':   {s:'메시지',    t:'**메시지** — 전달하는 **메시지**'},
+  'nature':    {s:'네이처',    t:'네(네!) 이처(이처럼) — 이처럼 아름다운 **자연**'},
+  'opinion':   {s:'오피니언',  t:'오(오!) 피(피가) 니언(끓는) — 피가 끓는 **의견**'},
+  'prepare':   {s:'프리페어',  t:'프리(free=자유) 페어(fair=공정) — 공정하게 **준비**하다'},
+
+  /* ── 중2 (39개) ── */
+  'achieve':   {s:'어치브',    t:'어(어!) 치(치다) 브(브이) — 해냈다! **달성**했어!'},
+  'advantage': {s:'어드밴티지',t:'어드밴(advance=앞서) — 앞서나가는 **이점**'},
+  'affect':    {s:'어펙트',    t:'어(어!) 펙(팩=팩트) 트 — 팩트가 **영향을 미치다**'},
+  'allow':     {s:'얼라우',    t:'얼(얼른) 라우(라우=라운지) — 라운지 **허락**받고 들어가'},
+  'ancient':   {s:'에인션트',  t:'에이징(aging=노화) 션트 — 아주 오래 노화된 **고대의**'},
+  'announce':  {s:'어나운스',  t:'어(어) 나(나) 운스(운동장에서) — 운동장에서 **발표**하다'},
+  'appropriate':{s:'어프로프리엇',t:'어프로(approve=승인) 프리엇 — 승인된 **적절한**'},
+  'attitude':  {s:'애티튜드',  t:'애(아이) 티튜드(tile=타일) — 타일처럼 단단한 **태도**'},
+  'audience':  {s:'오디언스',  t:'오디오(audio) 듣는 언스(once) — 한 번 듣는 **청중**'},
+  'available': {s:'어베일러블',t:'어(a) 베일(veil=베일) 러블 — 베일 벗겨 **이용 가능한**'},
+  'average':   {s:'애버리지',  t:'애(A) 버(but) 리지(ridge=능선) — 딱 능선의 **평균**'},
+  'behavior':  {s:'비헤이비어',t:'비(bee=벌) 헤이비어 — 벌의 독특한 **행동**'},
+  'benefit':   {s:'베네핏',    t:'베(베다) 네(네!) 핏(fit) — 딱 맞는 **혜택**!'},
+  'breathe':   {s:'브리드',    t:'브리즈(breeze=바람) — 바람처럼 **숨 쉬다**'},
+  'career':    {s:'커리어',    t:'커(car=차) 리어(rear=뒤) — 차 뒤로 달리는 **직업**'},
+  'cause':     {s:'코즈',      t:'cos(왜냐하면) — 이게 **원인**이야'},
+  'communicate':{s:'커뮤니케이트',t:'**커뮤니티**에서 케이트처럼 **소통**하다'},
+  'community': {s:'커뮤니티',  t:'**커뮤니티** = 같이 사는 **공동체**'},
+  'compare':   {s:'컴패어',    t:'컴(come=와서) 패어(pair=한 쌍) — 쌍을 놓고 **비교**하다'},
+  'compete':   {s:'컴피트',    t:'컴(come) 피트(feet=발) — 발로 달려와서 **경쟁**하다'},
+  'confident': {s:'컨피던트',  t:'컨(can) 피(fit) 던트 — 할 수 있다는 **자신 있는**'},
+  'consider':  {s:'컨시더',    t:'컨(can) 시더(cider=사이다) — 사이다처럼 시원하게 **고려**하다'},
+  'culture':   {s:'컬처',      t:'컬(cull=고르다) 처 — 골라 쌓은 **문화**'},
+  'curious':   {s:'큐리어스',  t:'Q(물음표) 리어스 — 물음표 가득한 **호기심 많은**'},
+  'damage':    {s:'대미지',    t:'게임에서 **대미지** 받으면 **피해**가 생긴다'},
+  'debate':    {s:'디베이트',  t:'di(둘) + bait(미끼) — 두 팀이 미끼를 던지는 **토론**'},
+  'decision':  {s:'디시전',    t:'디(d) 시전(시전=spell발동) — 주문 **결정**하다'},
+  'decrease':  {s:'디크리스',  t:'디(아래로) 크리스 — 크기가 아래로 **감소**하다'},
+  'describe':  {s:'디스크라이브',t:'디스크(disk)에 라이브(live)로 **묘사**하다'},
+  'develop':   {s:'디벨롭',    t:'디(더) 벨(bell=종) 롭(롭) — 종을 울려 계속 **발전**시키다'},
+  'disappear': {s:'디서피어',  t:'dis(없애다) + appear(나타나다) — **사라지다**'},
+  'distance':  {s:'디스턴스',  t:'dis(멀리) + stance(서기) — 멀리 서 있는 **거리**'},
+  'divide':    {s:'디바이드',  t:'di(둘로) + vide(나누다) — 둘로 **나누다**'},
+  'education': {s:'에듀케이션',t:'edu(가르치다) + cation — 가르치는 **교육**'},
+  'emotion':   {s:'이모션',    t:'이모(e + motion=움직임) — 마음이 움직이는 **감정**'},
+  'encourage': {s:'인커리지',  t:'in(안으로) + courage(용기) — 안으로 용기를 넣어 **격려**하다'},
+  'evidence':  {s:'에비던스',  t:'e + vidence(보다) — 눈으로 보는 **증거**'},
+  'express':   {s:'익스프레스',t:'빠른 **익스프레스**처럼 감정을 빠르게 **표현**하다'},
+  'global':    {s:'글로벌',    t:'글로브(globe=지구) + al — **전 세계적인**'},
+  'influence': {s:'인플루언스',t:'인(in) 플루(flu=독감) — 독감처럼 퍼지는 **영향**'},
+
+  /* ── 중3 (39개) ── */
+  'abandon':   {s:'어밴던',    t:'어(어!) 밴(밴=van차) 던(던지듯) — 밴에서 **버리다**'},
+  'accomplish':{s:'어컴플리시',t:'어(어!) 컴(컴퓨터) 플리즈 — 컴퓨터로 **성취**해줘!'},
+  'accurate':  {s:'애큐럿',    t:'에이(A) 큐(Q=정확히) 럿 — 정확히 맞아! **정확한**'},
+  'acknowledge':{s:'액놀리지', t:'액(action=행동) 놀리지(knowledge=지식) — 지식을 **인정**하다'},
+  'adapt':     {s:'어댑트',    t:'**어댑터**처럼 상황에 맞게 **적응**하다'},
+  'adequate':  {s:'애디쿼트',  t:'애(아이) 디(디자인) 쿼트(quote=인용) — 인용할 만큼 **충분한**'},
+  'alternative':{s:'올터너티브',t:'올(all=다) 터(터널) 너티브 — 터널의 **대안** 찾기'},
+  'ambition':  {s:'앰비션',    t:'앰(am=나는) 비션(vision=비전) — 나는 비전이 있다! **야망**'},
+  'analyze':   {s:'애널라이즈',t:'애(A) 널(null=0) 라이즈(rise) — 0부터 올라가며 **분석**하다'},
+  'anticipate':{s:'앤티시페이트',t:'앤티(anti=반대) 시페이트 — 반대 상황을 미리 **예상**하다'},
+  'appreciate':{s:'어프리시에이트',t:'어(어머) 프리(free=무료)야! — 무료라서 **감사하다**'},
+  'approach':  {s:'어프로치',  t:'어(어) 프로(pro=전문가) 치 — 전문가처럼 **접근**하다'},
+  'approximately':{s:'어프록시머틀리',t:'어프록(approx) = 약(約) — **대략**'},
+  'assume':    {s:'어슘',      t:'어(어?) 슘(슈마허) — 슈마허가 이길 거라고 **가정**하다'},
+  'authority': {s:'어쏘리티',  t:'어(a) 쏘리(sorry) 티 — 죄송합니다라고 말할 만한 **권위**'},
+  'broadcast': {s:'브로드캐스트',t:'**브로드**(broad=넓은) + **캐스트**(cast=던지다) — 넓게 던지는 **방송**'},
+  'calculate': {s:'캘큘레이트',t:'캘(칼) 큘(큐) 레이트 — 칼처럼 정확히 **계산**하다'},
+  'capable':   {s:'케이퍼블',  t:'케이(K) 퍼(fur=털) 블 — 털처럼 유연하게 **유능한**'},
+  'circumstance':{s:'써컴스턴스',t:'서(서클=circle) 컴스턴스 — 둘러싼 **상황**'},
+  'classify':  {s:'클래시파이',t:'클래스(class=등급) + 파이(fly=날다) — 등급별로 **분류**하다'},
+  'collaborate':{s:'컬래버레이트',t:'**컬래버**레이션 — 함께 **협력**하는 것'},
+  'complicated':{s:'컴플리케이티드',t:'컴플(complete) + 리케이티드 — 완성이 **복잡한**'},
+  'conclude':  {s:'컨클루드',  t:'컨(can) 클루(clue=단서) 드 — 단서로 **결론**짓다'},
+  'consequence':{s:'컨시퀀스', t:'컨(can) 시(see=보다) 퀀스 — 볼 수 있는 **결과**'},
+  'convince':  {s:'컨빈스',    t:'컨(can) 빈(bin=통) 스 — 빈 통에 채워 **설득**하다'},
+  'cooperate': {s:'코오퍼레이트',t:'코(co=함께) 오퍼레이트(operate=작동) — 함께 작동 **협력**'},
+  'criticize': {s:'크리티사이즈',t:'크리티(critic=비평가) 사이즈 — 비평가처럼 **비판**하다'},
+  'crucial':   {s:'크루셜',    t:'크루(crew=팀) 셜 — 팀에게 **매우 중요한**'},
+  'demonstrate':{s:'데먼스트레이트',t:'데몬(demon=악마) 스트레이트 — 악마도 놀랄 만큼 **보여주다**'},
+  'determine': {s:'디터민',    t:'디(d) 터(터널) 민(민) — 터널 끝을 **결정**하다'},
+  'distinguish':{s:'디스팅귀시',t:'디스(this) 팅귀(tinge=색) 시 — 색으로 **구별**하다'},
+  'diversity': {s:'다이버시티',t:'다이버(diver=잠수부)들의 **다양성**'},
+  'dominate':  {s:'도미네이트',t:'도미노(domino)처럼 넘어뜨리며 **지배**하다'},
+  'emphasize': {s:'엠퍼사이즈',t:'엠(M=큰) 펀치 사이즈 — M 사이즈 펀치로 **강조**하다'},
+  'enormous':  {s:'이노머스',  t:'이야(e)! 노(no!) 머스 — 말도 안 되게 **거대한**!'},
+  'essential': {s:'이센셜',    t:'esse(존재) + ntial — 존재의 **필수적인**'},
+  'evaluate':  {s:'이밸류에이트',t:'e + value(가치) + ate — 가치를 매겨 **평가**하다'},
+  'facilitate':{s:'퍼실리테이트',t:'퍼실(facility=시설) 리테이트 — 시설로 **용이하게** 하다'},
+  'generate':  {s:'제너레이트',t:'generator(발전기) + ate — 발전기로 **생성**하다'},
+  'hypothesis':{s:'하이포시시스',t:'하이(high) 포(포인트) — 높은 포인트의 **가설**'},
+
+  /* ── 고1 (39개) ── */
+  'abolish':   {s:'어볼리시',  t:'어(어?) 볼(볼펜) 리시 — 볼펜을 **폐지**하다?!'},
+  'abstract':  {s:'앱스트랙트',t:'ab(떼어내다) + tract(끌다) — 떼어낸 **추상적인**'},
+  'accelerate':{s:'액셀러레이트',t:'**액셀**을 밟으면 **가속화**된다'},
+  'accommodate':{s:'어코머데이트',t:'어(a) 코머(commer=상업) 데이트 — 상업적으로 **수용**하다'},
+  'accumulate':{s:'어큐뮬레이트',t:'어(a) 큐(큐=줄) 뮬레이트 — 줄지어 **축적**하다'},
+  'advocate':  {s:'애드버킷',  t:'애드(add=추가) 버킷(bucket=통) — 통에 담아 **지지**하다'},
+  'aggravate': {s:'애그러베이트',t:'애(agg=더 나쁜) 그러베이트 — 더 나쁘게 **악화**시키다'},
+  'allocate':  {s:'앨러케이트',t:'앨(all=다) 러케이트 — 다 나눠서 **할당**하다'},
+  'ambiguous': {s:'앰비귀어스',t:'ambi(양쪽) + guous — 양쪽으로 흔들리는 **모호한**'},
+  'ample':     {s:'앰플',      t:'의약품 **앰플**처럼 가득 찬 — **충분한**'},
+  'articulate':{s:'아티큘레이트',t:'아티(artis=기술) 큘레이트 — 기술적으로 **명확히 말하다**'},
+  'assert':    {s:'어서트',    t:'어서(어서!) 트럼펫 — 트럼펫 불며 **주장**하다'},
+  'assess':    {s:'어세스',    t:'어(a) 세스(census=조사) — 조사해서 **평가**하다'},
+  'attribute': {s:'애트리뷰트',t:'애(a) 트리(tree=나무) 뷰트(beauty) — 나무 아름다움의 **탓으로 돌리다**'},
+  'bizarre':   {s:'비자르',    t:'bee(벌) + zar(자르다) — 벌을 자르는 **기이한** 행동'},
+  'cease':     {s:'시즈',      t:'시(see=보다) 즈 — 보고 나서 **멈추다**'},
+  'chronic':   {s:'크로닉',    t:'크로(cron=시간) 닉 — 오랜 시간 이어지는 **만성적인**'},
+  'coherent':  {s:'코히어런트',t:'co(함께) + here(여기) — 함께 여기 있는 **일관된**'},
+  'compensate':{s:'컴펜세이트',t:'컴(com) + pens(저울) — 저울로 맞춰 **보상**하다'},
+  'competent': {s:'컴퍼턴트',  t:'컴(come=와) 퍼턴트 — 와서 바로 할 수 있는 **유능한**'},
+  'comprehensive':{s:'컴프리헨시브',t:'com(완전히) + prehend(잡다) — 완전히 잡아내는 **포괄적인**'},
+  'concede':   {s:'컨시드',    t:'컨(can) 시드(seed=씨앗) — 씨앗을 심어 **인정**하다'},
+  'concise':   {s:'컨사이스',  t:'컨(can) + size(크기) 줄여 — 크기 줄인 **간결한**'},
+  'conform':   {s:'컨폼',      t:'컨(con=함께) + form(형태) — 형태에 맞춰 **따르다**'},
+  'contradict':{s:'컨트러딕트',t:'contra(반대) + dict(말) — 반대로 말해 **반박**하다'},
+  'controversial':{s:'컨트로버셜',t:'contro(반대) + versy — 반대가 있는 **논란이 많은**'},
+  'conventional':{s:'컨벤셔널',t:'con + vention(모임) — 모임의 규칙을 따르는 **전통적인**'},
+  'correlate': {s:'코릴레이트',t:'co(함께) + relate(관련) — 함께 관련된 **상관관계**'},
+  'deteriorate':{s:'디티어리어레이트',t:'de(아래로) + tear(눈물) — 눈물 흘리며 **악화**되다'},
+  'dilemma':   {s:'딜레마',    t:'di(둘) + lemma(문제) — 두 문제 사이의 **딜레마**'},
+  'diminish':  {s:'디미니쉬',  t:'di + mini(작은) + sh — 작아지며 **줄어들다**'},
+  'dispute':   {s:'디스퓨트',  t:'dis(반대) + put(놓다) — 반대로 놓아 **분쟁**하다'},
+  'dynamic':   {s:'다이나믹',  t:'다이나마이트처럼 **역동적인**'},
+  'elaborate': {s:'일래버레이트',t:'e + labor(노동) — 엄청 공들인 **정교한**'},
+  'eliminate': {s:'일리미네이트',t:'e + limit(한계) — 한계를 없애 **제거**하다'},
+  'eloquent':  {s:'엘로퀀트',  t:'e + loquent(말) — 말을 잘하는 **유창한**'},
+  'emerging':  {s:'이머징',    t:'e + merge(합치다) + ing — 합쳐져 **떠오르는**'},
+  'evoke':     {s:'이보크',    t:'e + voke(부르다) — 불러내어 **불러일으키다**'},
+  'explicit':  {s:'익스플리싯',t:'ex(밖으로) + plicit — 밖으로 꺼낸 **명확한**'},
+  'formidable':{s:'포미더블',  t:'포(four) 미(me) 더블 — 나 혼자 넷? **무서운**!'},
+
+  /* ── 고2 (40개) ── */
+  'alleviate': {s:'얼리비에이트',t:'alley(골목) + via(길) — 골목길로 빠져나가 **완화**하다'},
+  'ambivalent':{s:'앰비밸런트',t:'ambi(양쪽) + valent(가치) — 양쪽 가치의 **상반된 감정**'},
+  'analogous': {s:'어낼러거스',t:'ana(다시) + log(기록) — 같은 기록처럼 **유사한**'},
+  'anomaly':   {s:'어노멀리',  t:'a(없다) + norm(정상) — 정상이 없는 **이상**'},
+  'arbitrary': {s:'아비트러리',t:'아버지(arbi) 마음대로 **임의적인**'},
+  'arduous':   {s:'아듀어스',  t:'아(아!) 듀(due=해야 할) 어스 — 해야 할 **힘든** 일'},
+  'avert':     {s:'어버트',    t:'a + vert(돌리다) — 시선을 돌려 **피하다**'},
+  'cognitive': {s:'코그니티브',t:'cogn(알다) + itive — 알아가는 **인지의**'},
+  'coincide':  {s:'코인사이드',t:'co(함께) + incide(일어나다) — 함께 **동시에 일어나다**'},
+  'compel':    {s:'컴펠',      t:'com + pel(밀다) — 밀어붙여 **강요**하다'},
+  'conceive':  {s:'컨시브',    t:'con + ceive(받다) — 마음으로 받아 **생각해내다**'},
+  'conducive': {s:'컨듀시브',  t:'con + duce(이끌다) — 이끌어 **도움이 되는**'},
+  'contemplate':{s:'컨템플레이트',t:'con + temple(사원) — 사원에서 **심사숙고**하다'},
+  'contend':   {s:'컨텐드',    t:'con(함께) + tend(향하다) — 서로 향해 **다투다**'},
+  'criterion': {s:'크라이티어리언',t:'crit(판단) + erion — 판단의 **기준**'},
+  'cumulative':{s:'큐뮬러티브',t:'cumul(쌓다) + ative — 쌓아가는 **누적적인**'},
+  'cynical':   {s:'시니컬',    t:'sigh(한숨) + nical — 한숨 쉬며 **냉소적인**'},
+  'deduce':    {s:'디듀스',    t:'de + duce(이끌다) — 끌어내어 **추론**하다'},
+  'defer':     {s:'디퍼',      t:'de + fer(가져가다) — 뒤로 가져가 **미루다**'},
+  'deliberate':{s:'딜리버레이트',t:'de + liberate(자유) — 자유롭게 신중한 **의도적인**'},
+  'derive':    {s:'디라이브',  t:'de + rive(강) — 강에서 흘러나온 **유래하다**'},
+  'discrepancy':{s:'디스크레펀시',t:'dis + crepant(다른) — 서로 다른 **불일치**'},
+  'durable':   {s:'듀러블',    t:'dur(오래) + able(가능) — 오래 가능한 **내구성 있는**'},
+  'elusive':   {s:'일루시브',  t:'e + lusive(놀이) — 잡히지 않는 **파악하기 어려운**'},
+  'empirical': {s:'엠피리컬',  t:'empiri(경험) + cal — 경험에서 나온 **경험적인**'},
+  'enhance':   {s:'인핸스',    t:'en(안으로) + hance(손잡다) — 손잡고 **향상**시키다'},
+  'exacerbate':{s:'이그재서베이트',t:'ex + acerb(쓴) — 더 쓰게 만들어 **악화**시키다'},
+  'fluctuate': {s:'플럭추에이트',t:'fluc(흐름) + tuate — 물처럼 흐르며 **변동**하다'},
+  'foster':    {s:'포스터',    t:'**포스터**처럼 붙여 키우다 — **조성**하다'},
+  'frugal':    {s:'프루걸',    t:'fruit(과일) + gal — 과일만 먹는 **검소한**'},
+  'fundamental':{s:'펀더멘털', t:'fund(기반) + mental — 바닥부터 **근본적인**'},
+  'harbor':    {s:'하버',      t:'**하버드** 근처 **항구**처럼 **품다**'},
+  'implicit':  {s:'임플리싯',  t:'im(안에) + plicit(접힌) — 안에 접힌 **암묵적인**'},
+  'incentive': {s:'인센티브',  t:'in + centive(자극) — 자극을 주는 **동기**'},
+  'inherent':  {s:'인히어런트',t:'in(안에) + here(여기) — 안에 여기 있는 **고유한**'},
+  'innate':    {s:'이네이트',  t:'in(안에) + nate(태어난) — 태어날 때부터 안에 **타고난**'},
+  'integrity': {s:'인테그리티',t:'in + teg(덮다) — 안팎이 같은 **성실함**'},
+  'invoke':    {s:'인보크',    t:'in + voke(부르다) — 안으로 불러 **발동**하다'},
+  'mitigate':  {s:'미티게이트',t:'mit(보내다) + igate — 보내서 줄이는 **완화**하다'},
+  'nuance':    {s:'뉘앙스',    t:'**뉘앙스** — 미묘한 색깔 차이처럼 **미묘한 차이**'},
+
+  /* ── 고3 (40개) ── */
+  'abdicate':  {s:'앱디케이트',t:'ab(떠나다) + dic(말하다) — 왕위를 말하고 **포기**하다'},
+  'aberrant':  {s:'어베런트',  t:'ab(멀리) + err(틀리다) — 틀리게 멀리 간 **비정상적인**'},
+  'abstruse':  {s:'앱스트루스',t:'ab + struse(push=밀다) — 밀쳐놓은 **난해한**'},
+  'acrimony':  {s:'애크리모니',t:'acri(날카로운) + mony — 날카로운 **신랄함**'},
+  'admonish':  {s:'애드모니시',t:'ad(향해) + mon(경고) — 경고를 향해 **훈계**하다'},
+  'aesthetic': {s:'에스테틱',  t:'**에스테틱** 샵처럼 아름다운 — **미적인**'},
+  'affable':   {s:'애퍼블',    t:'af(向=향해) + fable(우화=이야기) — 이야기 들으러 오는 **상냥한**'},
+  'aloof':     {s:'얼루프',    t:'a + loof(지붕위) — 지붕 위에 혼자 있는 **냉담한**'},
+  'ambiguity': {s:'앰비규이티',t:'ambi(양쪽) — 양쪽인 **모호함**'},
+  'ameliorate':{s:'어밀리어레이트',t:'a + melio(더 나은) — 더 낫게 **개선**하다'},
+  'anachronism':{s:'어내크러니즘',t:'ana(반대) + chron(시간) — 시간을 거스른 **시대착오**'},
+  'antipathy': {s:'앤티패시',  t:'anti(반대) + pathy(감정) — 반대 감정인 **반감**'},
+  'apathy':    {s:'아패시',    t:'a(없다) + pathy(감정) — 감정이 없는 **무관심**'},
+  'appease':   {s:'어피즈',    t:'ap + pease(평화) — 평화롭게 **달래다**'},
+  'archaic':   {s:'아케이익',  t:'arch(오래된) + aic — 오래된 **구식의**'},
+  'ardent':    {s:'아던트',    t:'ard(불) + ent — 불같이 열정적인 **열렬한**'},
+  'ascertain': {s:'애서테인',  t:'a + certain(확실) — 확실하게 **확인**하다'},
+  'austere':   {s:'오스티어',  t:'aus(aus=고통) + tere — 고통스럽게 검소한 **엄격한**'},
+  'banal':     {s:'바날',      t:'바나나처럼 흔한 **진부한**'},
+  'benevolent':{s:'비네볼런트',t:'bene(좋은) + vol(원하다) — 좋음을 원하는 **자비로운**'},
+  'brevity':   {s:'브레비티',  t:'brev(짧은) + ity — 짧은 것의 **간결함**'},
+  'capitulate':{s:'캐피틀레이트',t:'capit(머리) + ulate — 머리를 숙여 **굴복**하다'},
+  'caustic':   {s:'코스틱',    t:'caust(불태우다) + ic — 불태우는 **신랄한**'},
+  'circumspect':{s:'써컴스펙트',t:'circum(주위) + spect(보다) — 주위를 살피는 **신중한**'},
+  'clandestine':{s:'클랜데스틴',t:'clan(집단) + destine — 집단이 숨기는 **비밀의**'},
+  'coerce':    {s:'코어스',    t:'co + erce(force=힘) — 함께 힘으로 **강요**하다'},
+  'complacent':{s:'컴플레이선트',t:'com + placent(기쁜) — 자기 기쁨에 빠진 **안일한**'},
+  'convoluted':{s:'컨볼루티드',t:'con + volute(말다) — 같이 말려 **복잡한**'},
+  'deprecate': {s:'데프러케이트',t:'de + prec(기도) — 기도로 막는 **반대**하다'},
+  'didactic':  {s:'디댁틱',    t:'didact(가르치다) + ic — 가르치려는 **교훈적인**'},
+  'discern':   {s:'디선',      t:'di(둘로) + cern(체) — 체로 걸러 **식별**하다'},
+  'dissent':   {s:'디센트',    t:'dis(반대) + sent(의견) — 반대 의견으로 **반대**하다'},
+  'dogmatic':  {s:'도그매틱',  t:'dog(개) + matic — 개처럼 고집 세는 **독단적인**'},
+  'elucidate': {s:'일루시데이트',t:'e + luc(빛) — 빛을 비춰 **명확히 설명**하다'},
+  'enigmatic': {s:'에니그매틱',t:'Enigma(암호기) + tic — 암호기 같은 **수수께끼의**'},
+  'ephemeral': {s:'이페머럴',  t:'epi + hemer(날) — 하루짜리 **덧없는**'},
+  'equivocate':{s:'이퀴보케이트',t:'equi(같게) + voc(말) — 같게 말하는 척 **모호하게 말하다**'},
+  'esoteric':  {s:'에소테릭',  t:'eso(안으로) + teric — 안쪽 사람들만 아는 **난해한**'},
+  'exonerate': {s:'이그조너레이트',t:'ex(밖으로) + onus(짐) — 짐을 밖으로 내어 **무죄임을 밝히다**'},
+  'facade':    {s:'퍼사드',    t:'건물 앞면(facade) — 앞면만 보이는 **겉모습**'}
+};
+
+var DEFAULTS = {
+  mid1:[
+    {en:'absent',ko:'결석한, 없는'},{en:'arrive',ko:'도착하다'},{en:'borrow',ko:'빌리다'},
+    {en:'careful',ko:'조심스러운'},{en:'certainly',ko:'확실히, 물론'},{en:'change',ko:'변화; 바꾸다'},
+    {en:'choose',ko:'선택하다'},{en:'collect',ko:'모으다, 수집하다'},{en:'contact',ko:'연락하다'},
+    {en:'correct',ko:'올바른; 수정하다'},{en:'create',ko:'만들다, 창조하다'},{en:'different',ko:'다른, 다양한'},
+    {en:'difficult',ko:'어려운'},{en:'discover',ko:'발견하다'},{en:'enjoy',ko:'즐기다'},
+    {en:'environment',ko:'환경'},{en:'example',ko:'예, 예시'},{en:'excited',ko:'신이 난'},
+    {en:'experience',ko:'경험; 경험하다'},{en:'explain',ko:'설명하다'},{en:'favorite',ko:'가장 좋아하는'},
+    {en:'festival',ko:'축제'},{en:'finish',ko:'끝내다'},{en:'foreign',ko:'외국의'},
+    {en:'forget',ko:'잊다'},{en:'future',ko:'미래'},{en:'healthy',ko:'건강한'},
+    {en:'history',ko:'역사'},{en:'honest',ko:'정직한'},{en:'important',ko:'중요한'},
+    {en:'introduce',ko:'소개하다'},{en:'invite',ko:'초대하다'},{en:'join',ko:'참가하다'},
+    {en:'journey',ko:'여행, 여정'},{en:'knowledge',ko:'지식'},{en:'language',ko:'언어'},
+    {en:'message',ko:'메시지, 전달 내용'},{en:'nature',ko:'자연'},{en:'opinion',ko:'의견'},
+    {en:'prepare',ko:'준비하다'}
+  ],
+  mid2:[
+    {en:'achieve',ko:'이루다, 달성하다'},{en:'advantage',ko:'이점, 장점'},{en:'affect',ko:'영향을 미치다'},
+    {en:'allow',ko:'허락하다'},{en:'ancient',ko:'고대의'},{en:'announce',ko:'발표하다'},
+    {en:'appropriate',ko:'적절한'},{en:'attitude',ko:'태도, 자세'},{en:'audience',ko:'청중, 관객'},
+    {en:'available',ko:'이용 가능한'},{en:'average',ko:'평균; 보통의'},{en:'behavior',ko:'행동'},
+    {en:'benefit',ko:'이익, 혜택'},{en:'breathe',ko:'숨 쉬다'},{en:'career',ko:'직업, 경력'},
+    {en:'cause',ko:'원인; 일으키다'},{en:'communicate',ko:'소통하다'},{en:'community',ko:'공동체'},
+    {en:'compare',ko:'비교하다'},{en:'compete',ko:'경쟁하다'},{en:'confident',ko:'자신 있는'},
+    {en:'consider',ko:'고려하다'},{en:'culture',ko:'문화'},{en:'curious',ko:'호기심이 많은'},
+    {en:'damage',ko:'피해; 손상시키다'},{en:'debate',ko:'토론; 토론하다'},{en:'decision',ko:'결정'},
+    {en:'decrease',ko:'감소하다'},{en:'describe',ko:'묘사하다'},{en:'develop',ko:'발전시키다'},
+    {en:'disappear',ko:'사라지다'},{en:'distance',ko:'거리'},{en:'divide',ko:'나누다'},
+    {en:'education',ko:'교육'},{en:'emotion',ko:'감정'},{en:'encourage',ko:'격려하다'},
+    {en:'evidence',ko:'증거'},{en:'express',ko:'표현하다'},{en:'global',ko:'전 세계적인'},
+    {en:'influence',ko:'영향; 영향을 미치다'}
+  ],
+  mid3:[
+    {en:'abandon',ko:'버리다, 포기하다'},{en:'accomplish',ko:'성취하다'},{en:'accurate',ko:'정확한'},
+    {en:'acknowledge',ko:'인정하다'},{en:'adapt',ko:'적응하다'},{en:'adequate',ko:'적절한, 충분한'},
+    {en:'alternative',ko:'대안; 대안적인'},{en:'ambition',ko:'야망, 포부'},{en:'analyze',ko:'분석하다'},
+    {en:'anticipate',ko:'예상하다'},{en:'appreciate',ko:'감사하다; 감상하다'},{en:'approach',ko:'접근법; 접근하다'},
+    {en:'approximately',ko:'대략, 약'},{en:'assume',ko:'가정하다'},{en:'authority',ko:'권위, 당국'},
+    {en:'broadcast',ko:'방송하다'},{en:'calculate',ko:'계산하다'},{en:'capable',ko:'유능한'},
+    {en:'circumstance',ko:'상황, 환경'},{en:'classify',ko:'분류하다'},{en:'collaborate',ko:'협력하다'},
+    {en:'complicated',ko:'복잡한'},{en:'conclude',ko:'결론짓다'},{en:'consequence',ko:'결과'},
+    {en:'convince',ko:'설득하다'},{en:'cooperate',ko:'협력하다'},{en:'criticize',ko:'비판하다'},
+    {en:'crucial',ko:'매우 중요한'},{en:'demonstrate',ko:'보여주다'},{en:'determine',ko:'결정하다'},
+    {en:'distinguish',ko:'구별하다'},{en:'diversity',ko:'다양성'},{en:'dominate',ko:'지배하다'},
+    {en:'emphasize',ko:'강조하다'},{en:'enormous',ko:'거대한, 엄청난'},{en:'essential',ko:'필수적인'},
+    {en:'evaluate',ko:'평가하다'},{en:'facilitate',ko:'용이하게 하다'},{en:'generate',ko:'생성하다'},
+    {en:'hypothesis',ko:'가설'}
+  ],
+  hi1:[
+    {en:'abolish',ko:'폐지하다'},{en:'abstract',ko:'추상적인; 개요'},{en:'accelerate',ko:'가속화하다'},
+    {en:'accommodate',ko:'수용하다'},{en:'accumulate',ko:'축적하다'},{en:'advocate',ko:'지지하다; 지지자'},
+    {en:'aggravate',ko:'악화시키다'},{en:'allocate',ko:'할당하다'},{en:'ambiguous',ko:'모호한'},
+    {en:'ample',ko:'충분한, 넉넉한'},{en:'articulate',ko:'명확히 말하다; 명확한'},{en:'assert',ko:'주장하다'},
+    {en:'assess',ko:'평가하다'},{en:'attribute',ko:'~탓으로 돌리다; 속성'},{en:'bizarre',ko:'기이한'},
+    {en:'cease',ko:'멈추다'},{en:'chronic',ko:'만성적인'},{en:'coherent',ko:'일관된'},
+    {en:'compensate',ko:'보상하다'},{en:'competent',ko:'유능한'},{en:'comprehensive',ko:'포괄적인'},
+    {en:'concede',ko:'인정하다, 양보하다'},{en:'concise',ko:'간결한'},{en:'conform',ko:'따르다'},
+    {en:'contradict',ko:'반박하다'},{en:'controversial',ko:'논란이 많은'},{en:'conventional',ko:'전통적인'},
+    {en:'correlate',ko:'상관관계가 있다'},{en:'deteriorate',ko:'악화되다'},{en:'dilemma',ko:'딜레마'},
+    {en:'diminish',ko:'줄어들다'},{en:'dispute',ko:'분쟁; 반박하다'},{en:'dynamic',ko:'역동적인'},
+    {en:'elaborate',ko:'정교한; 상세히 설명하다'},{en:'eliminate',ko:'제거하다'},{en:'eloquent',ko:'유창한'},
+    {en:'emerging',ko:'떠오르는'},{en:'evoke',ko:'불러일으키다'},{en:'explicit',ko:'명확한'},
+    {en:'formidable',ko:'강력한, 무서운'}
+  ],
+  hi2:[
+    {en:'alleviate',ko:'완화하다'},{en:'ambivalent',ko:'상반된 감정의'},{en:'analogous',ko:'유사한'},
+    {en:'anomaly',ko:'이상, 변칙'},{en:'arbitrary',ko:'임의적인, 독단적인'},{en:'arduous',ko:'힘든'},
+    {en:'avert',ko:'피하다, 막다'},{en:'cognitive',ko:'인지의'},{en:'coincide',ko:'동시에 일어나다'},
+    {en:'compel',ko:'강요하다'},{en:'conceive',ko:'생각해내다'},{en:'conducive',ko:'도움이 되는'},
+    {en:'contemplate',ko:'심사숙고하다'},{en:'contend',ko:'주장하다; 다투다'},{en:'criterion',ko:'기준'},
+    {en:'cumulative',ko:'누적적인'},{en:'cynical',ko:'냉소적인'},{en:'deduce',ko:'추론하다'},
+    {en:'defer',ko:'미루다; 따르다'},{en:'deliberate',ko:'의도적인; 신중히 생각하다'},{en:'derive',ko:'유래하다'},
+    {en:'discrepancy',ko:'불일치, 차이'},{en:'durable',ko:'내구성이 있는'},{en:'elusive',ko:'파악하기 어려운'},
+    {en:'empirical',ko:'경험적인'},{en:'enhance',ko:'향상시키다'},{en:'exacerbate',ko:'악화시키다'},
+    {en:'fluctuate',ko:'변동하다'},{en:'foster',ko:'조성하다, 육성하다'},{en:'frugal',ko:'검소한'},
+    {en:'fundamental',ko:'근본적인'},{en:'harbor',ko:'품다; 항구'},{en:'implicit',ko:'암묵적인'},
+    {en:'incentive',ko:'동기, 유인책'},{en:'inherent',ko:'고유한, 내재된'},{en:'innate',ko:'타고난'},
+    {en:'integrity',ko:'성실함; 완전성'},{en:'invoke',ko:'발동하다, 불러내다'},{en:'mitigate',ko:'완화하다'},
+    {en:'nuance',ko:'미묘한 차이'}
+  ],
+  hi3:[
+    {en:'abdicate',ko:'포기하다'},{en:'aberrant',ko:'비정상적인'},{en:'abstruse',ko:'난해한'},
+    {en:'acrimony',ko:'신랄함'},{en:'admonish',ko:'훈계하다'},{en:'aesthetic',ko:'미적인; 미학'},
+    {en:'affable',ko:'상냥한'},{en:'aloof',ko:'냉담한, 거리를 두는'},{en:'ambiguity',ko:'모호함'},
+    {en:'ameliorate',ko:'개선하다'},{en:'anachronism',ko:'시대착오'},{en:'antipathy',ko:'반감'},
+    {en:'apathy',ko:'무관심'},{en:'appease',ko:'달래다'},{en:'archaic',ko:'구식의'},
+    {en:'ardent',ko:'열렬한'},{en:'ascertain',ko:'확인하다'},{en:'austere',ko:'엄격한; 검소한'},
+    {en:'banal',ko:'진부한'},{en:'benevolent',ko:'자비로운'},{en:'brevity',ko:'간결함'},
+    {en:'capitulate',ko:'굴복하다'},{en:'caustic',ko:'신랄한'},{en:'circumspect',ko:'신중한'},
+    {en:'clandestine',ko:'비밀의'},{en:'coerce',ko:'강요하다'},{en:'complacent',ko:'안일한'},
+    {en:'convoluted',ko:'복잡한, 뒤얽힌'},{en:'deprecate',ko:'반대하다'},{en:'didactic',ko:'교훈적인'},
+    {en:'discern',ko:'식별하다'},{en:'dissent',ko:'반대하다; 반대 의견'},{en:'dogmatic',ko:'독단적인'},
+    {en:'elucidate',ko:'명확히 설명하다'},{en:'enigmatic',ko:'수수께끼 같은'},{en:'ephemeral',ko:'덧없는, 일시적인'},
+    {en:'equivocate',ko:'모호하게 말하다'},{en:'esoteric',ko:'난해한, 소수만 아는'},{en:'exonerate',ko:'무죄임을 밝히다'},
+    {en:'facade',ko:'겉모습, 허울'}
+  ]
+};
+
+var LEVEL_NAMES={mid1:'중1',mid2:'중2',mid3:'중3',hi1:'고1',hi2:'고2',hi3:'고3',custom:'직접'};
+var LEVEL_CLS={mid1:'lvl-mid1',mid2:'lvl-mid2',mid3:'lvl-mid3',hi1:'lvl-hi1',hi2:'lvl-hi2',hi3:'lvl-hi3',custom:'lvl-custom'};
+
+function calcSR(c,ok){var i=c.interval||0,e=c.easiness||2.5,r=c.reps||0;if(ok){r++;i=r===1?1:r===2?3:Math.round(i*e);e=Math.max(1.3,e+0.05);}else{r=0;i=1;e=Math.max(1.3,e-0.2);}return{interval:i,easiness:e,reps:r};}
+function isDue(c){return !c.nextReview||Date.now()>=c.nextReview;}
+function daysUntil(c){if(!c.nextReview)return 0;var d=c.nextReview-Date.now();return d<=0?0:Math.ceil(d/86400000);}
+function getMN(en){return MN[en.toLowerCase()]||null;}
+function renderStory(t){return t.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>');}
+
+var words=[],quizMode='en-ko',qScore=0,qTotal=0,answered=false;
+var filterMode='all',selectedLevel='mid1',streak=0,lastStreakDate=null;
+
+function save(){try{localStorage.setItem('ev6_words',JSON.stringify(words));localStorage.setItem('ev6_s',JSON.stringify({streak:streak,lastStreakDate:lastStreakDate}));}catch(e){}}
+function load(){
+  try{
+    // 현재 버전 먼저 시도
+    var w=localStorage.getItem('ev6_words');
+    // 없으면 이전 버전 데이터 마이그레이션
+    if(!w) w=localStorage.getItem('ev5_words');
+    if(!w) w=localStorage.getItem('ev4_words');
+    if(!w) w=localStorage.getItem('ev3_words');
+    if(!w) w=localStorage.getItem('ev2_words');
+    if(!w) w=localStorage.getItem('ev_words');
+    if(w) words=JSON.parse(w);
+    // 이전 버전 단어에 memorized 필드 없으면 추가
+    words.forEach(function(wd){if(typeof wd.memorized==='undefined')wd.memorized=false;});
+    var s=localStorage.getItem('ev6_s')||localStorage.getItem('ev5_s')||localStorage.getItem('ev4_s')||localStorage.getItem('ev3_s');
+    if(s){var d=JSON.parse(s);streak=d.streak||0;lastStreakDate=d.lastStreakDate||null;}
+  }catch(e){}
+  if(!words.length){Object.keys(DEFAULTS).forEach(function(lvl){DEFAULTS[lvl].forEach(function(d){words.push({en:d.en,ko:d.ko,level:lvl,added:Date.now(),memorized:false});});});save();}
+  var today=new Date().toDateString();
+  if(lastStreakDate&&lastStreakDate!==today){var yest=new Date(Date.now()-86400000).toDateString();if(lastStreakDate!==yest)streak=0;}
+}
+function updateStats(){
+  var mem=words.filter(function(w){return w.memorized;}).length;
+  document.getElementById('s-total').textContent=words.length;
+  document.getElementById('s-learning').textContent=words.length-mem;
+  document.getElementById('s-memorized').textContent=mem;
+  document.getElementById('s-streak').textContent=streak;
+  var dc=document.getElementById('dueCount');if(dc)dc.textContent=words.filter(function(w){return w.memorized&&isDue(w);}).length;
+}
+function toggleMnemonicPanel(en){var p=document.getElementById('mp-'+en);if(p)p.classList.toggle('open');}
+function toggleMemorized(en){
+  var idx=words.findIndex(function(w){return w.en===en;});if(idx<0)return;
+  var item=document.querySelector('[data-en="'+en+'"]');
+  if(item){item.classList.add('sliding-out');setTimeout(function(){words[idx].memorized=!words[idx].memorized;if(words[idx].memorized){words[idx].reps=0;words[idx].interval=0;words[idx].nextReview=null;}save();updateStats();renderList();renderMemorized();},250);}
+  else{words[idx].memorized=!words[idx].memorized;if(words[idx].memorized){words[idx].reps=0;words[idx].interval=0;words[idx].nextReview=null;}save();updateStats();renderList();renderMemorized();}
+}
+function buildWordItem(w,isMemorized){
+  var lvl=w.level||'mid1',enSafe=w.en.replace(/'/g,"\\'"),mn=getMN(w.en);
+  var srText=isMemorized?(isDue(w)?'<span class="sr-info due-now">🔴 복습</span>':'<span class="sr-info">'+daysUntil(w)+'일 후</span>'):'';
+  var hint=isMemorized?'↩ 되돌리기':'✓ 외웠어요';
+  var mnBtn=mn?'<button class="mnemonic-toggle" onclick="event.stopPropagation();toggleMnemonicPanel(\''+enSafe+'\')">🧠 연상 힌트 보기</button>':'';
+  var mnPanel=mn?'<div class="mnemonic-panel" id="mp-'+w.en+'"><div class="mnemonic-sound">🔊 발음 연상: "'+mn.s+'"</div><div class="mnemonic-story">'+renderStory(mn.t)+'</div></div>':'';
+  return '<div class="word-item'+(isMemorized?' memorized':'')+'" data-en="'+w.en+'">'
+    +'<div class="word-main" onclick="toggleMemorized(\''+enSafe+'\')">'
+      +'<span class="level-badge '+(LEVEL_CLS[lvl]||'lvl-custom')+'">'+(LEVEL_NAMES[lvl]||'직접')+'</span>'
+      +'<div class="word-en">'+w.en+'</div><div class="word-ko">'+w.ko+'</div>'
+      +srText+'<span class="memorize-hint">'+hint+'</span>'
+      +'<button class="speak-btn" onclick="event.stopPropagation();speak(\''+enSafe+'\')">🔊</button>'
+      +'<button class="del-btn" onclick="event.stopPropagation();deleteWord(\''+enSafe+'\')">×</button>'
+    +'</div>'+mnBtn+mnPanel+'</div>';
+}
+function setFilter(f,btn){filterMode=f;document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');renderList();}
+function renderList(){
+  var q=(document.getElementById('searchInput').value||'').toLowerCase();
+  var filtered=words.filter(function(w){return !w.memorized&&(!q||w.en.toLowerCase().includes(q)||w.ko.includes(q))&&(filterMode==='all'||w.level===filterMode);});
+  var el=document.getElementById('wordList');
+  if(!filtered.length){el.innerHTML='<div class="empty"><div class="big">'+(filterMode==='all'&&!q?'🎉':'🔍')+'</div>'+(filterMode==='all'&&!q?'모든 단어를 외웠어요!':'해당하는 단어가 없어요')+'</div>';return;}
+  el.innerHTML=filtered.map(function(w){return buildWordItem(w,false);}).join('');
+}
+function renderMemorized(){
+  var q=(document.getElementById('searchMemorized').value||'').toLowerCase();
+  var filtered=words.filter(function(w){return w.memorized&&(!q||w.en.toLowerCase().includes(q)||w.ko.includes(q));});
+  filtered.sort(function(a,b){return (isDue(a)?0:1)-(isDue(b)?0:1);});
+  var el=document.getElementById('memorizedList');
+  if(!filtered.length){el.innerHTML='<div class="empty"><div class="big">📭</div>외운 단어가 없어요.<br>단어장에서 단어를 클릭해 추가해보세요!</div>';return;}
+  var due=filtered.filter(function(w){return isDue(w);}),ok=filtered.filter(function(w){return !isDue(w);});
+  var html='';
+  if(due.length)html+='<div class="section-label">🔴 복습 필요 ('+due.length+'개)</div>'+due.map(function(w){return buildWordItem(w,true);}).join('');
+  if(ok.length)html+='<div class="section-label">✅ 복습 완료 ('+ok.length+'개)</div>'+ok.map(function(w){return buildWordItem(w,true);}).join('');
+  el.innerHTML=html;
+}
+function deleteWord(en){if(!confirm('"'+en+'" 을 삭제할까요?'))return;words=words.filter(function(w){return w.en!==en;});save();updateStats();renderList();renderMemorized();}
+function addWord(){
+  var en=document.getElementById('inEn').value.trim().toLowerCase(),ko=document.getElementById('inKo').value.trim();
+  if(!en||!ko){showMsg('영어와 한국어 뜻을 모두 입력해주세요!','red');return;}
+  if(words.find(function(w){return w.en===en;})){showMsg('"'+en+'" 은 이미 있어요!','amber');return;}
+  words.push({en:en,ko:ko,level:'custom',added:Date.now(),memorized:false});
+  save();updateStats();renderList();renderDefaultGrid();
+  document.getElementById('inEn').value='';document.getElementById('inKo').value='';document.getElementById('inEn').focus();
+  showMsg('✅ "'+en+'" 추가됐어요!','green');
+}
+function showMsg(text,color){var msg=document.getElementById('addMsg');var cols={green:'var(--green)',red:'var(--red)',amber:'var(--amber)'};msg.style.color=cols[color];msg.textContent=text;clearTimeout(msg._t);msg._t=setTimeout(function(){msg.textContent='';},2500);}
+function addDefaultWord(en,ko,level){if(words.find(function(w){return w.en===en;}))return;words.push({en:en,ko:ko,level:level,added:Date.now(),memorized:false});save();updateStats();renderList();renderDefaultGrid();}
+function renderLevelTabs(){document.getElementById('levelTabs').innerHTML=Object.keys(DEFAULTS).map(function(k){return '<button class="level-tab'+(selectedLevel===k?' active':'')+'" onclick="selectLevel(\''+k+'\',this)">'+LEVEL_NAMES[k]+'</button>';}).join('');}
+function selectLevel(lvl,btn){selectedLevel=lvl;document.querySelectorAll('.level-tab').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');renderDefaultGrid();}
+function renderDefaultGrid(){
+  var added=new Set(words.map(function(w){return w.en;}));
+  document.getElementById('defaultGrid').innerHTML=(DEFAULTS[selectedLevel]||[]).map(function(d){
+    var isAdded=added.has(d.en),enS=d.en.replace(/'/g,"\\'"),koS=d.ko.replace(/'/g,"\\'").replace(/"/g,'&quot;');
+    return '<div class="default-item"><div><div class="default-en">'+d.en+'</div><div class="default-ko">'+d.ko+'</div></div>'
+      +'<button class="add-small'+(isAdded?' added':'')+'" onclick="addDefaultWord(\''+enS+'\',\''+koS+'\',\''+selectedLevel+'\')" '+(isAdded?'disabled':'')+'>'+(isAdded?'✓추가됨':'+ 추가')+'</button></div>';
+  }).join('');}
+function switchTab(tab){
+  ['list','memorized','add','quiz'].forEach(function(t){document.getElementById('tab-'+t).classList.toggle('active',t===tab);});
+  document.querySelectorAll('.tab-btn').forEach(function(b,i){b.classList.toggle('active',['list','memorized','add','quiz'][i]===tab);});
+  if(tab==='quiz'){qScore=0;qTotal=0;startQuiz();}
+  if(tab==='list')renderList();
+  if(tab==='memorized')renderMemorized();
+  if(tab==='add'){renderLevelTabs();renderDefaultGrid();}
+  updateStats();
+}
+function setMode(m){quizMode=m;document.getElementById('modeEK').classList.toggle('active',m==='en-ko');document.getElementById('modeKE').classList.toggle('active',m!=='en-ko');qScore=0;qTotal=0;startQuiz();}
+function speak(text){if(!window.speechSynthesis)return;speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(text);u.lang='en-US';u.rate=0.82;speechSynthesis.speak(u);}
+function pickQuizWord(pool){
+  if(!pool.length)return null;
+  var weights=pool.map(function(w){return isDue(w)?4:1;}),total=weights.reduce(function(a,b){return a+b;},0),r=Math.random()*total;
+  for(var i=0;i<pool.length;i++){r-=weights[i];if(r<=0)return pool[i];}
+  return pool[pool.length-1];
+}
+function startQuiz(){
+  updateStats();
+  var pool=words.filter(function(w){return w.memorized;});
+  var due=pool.filter(function(w){return isDue(w);}).length;
+  var hdr='<div style="background:var(--purple-soft);border:1px solid #C9BCE8;border-radius:var(--radius-sm);padding:11px 14px;margin-bottom:12px">'
+    +'<div style="font-size:13px;font-weight:700;color:var(--purple);margin-bottom:4px">🧠 연상 암기 + 간격 반복</div>'
+    +'<div style="font-size:12px;color:var(--text-muted);line-height:1.7">힌트 버튼으로 연상 이미지를 먼저 본 뒤 답을 맞혀보세요!<br>틀린 단어 → <b style="color:var(--red)">내일 재출제</b> | 맞힌 단어 → 간격이 늘어남</div>'
+    +'</div>'
+    +'<div class="sr-panel"><div><div class="sr-title">복습 필요한 단어</div><div class="sr-desc">오늘 꼭 봐야 할 단어</div></div><div class="sr-count" id="dueCount">'+due+'</div></div>'
+    +'<div class="quiz-mode-row">'
+      +'<button class="mode-btn'+(quizMode==='en-ko'?' active':'')+'" id="modeEK" onclick="setMode(\'en-ko\')">영어 → 한국어</button>'
+      +'<button class="mode-btn'+(quizMode!=='en-ko'?' active':'')+'" id="modeKE" onclick="setMode(\'ko-en\')">한국어 → 영어</button>'
+    +'</div>';
+  if(pool.length<2){document.getElementById('quizArea').innerHTML=hdr+'<div class="quiz-empty"><div class="big">📋</div>외운 단어가 <b>2개 이상</b> 필요해요!<br><br>단어장 탭에서 단어를 클릭해<br>외운 단어로 이동해보세요 ✨</div>';return;}
+  answered=false;
+  var q=pickQuizWord(pool),question=quizMode==='en-ko'?q.en:q.ko,answer=quizMode==='en-ko'?q.ko:q.en;
+  var others=pool.filter(function(w){return w.en!==q.en;});
+  if(others.length<3)others=words.filter(function(w){return w.en!==q.en;});
+  others=others.sort(function(){return Math.random()-0.5;}).slice(0,3);
+  var opts=others.map(function(w){return quizMode==='en-ko'?w.ko:w.en;}).concat([answer]).sort(function(){return Math.random()-0.5;});
+  var pct=qTotal>0?Math.round((qScore/qTotal)*100):0,lvl=q.level||'mid1';
+  var enSafe=q.en.replace(/'/g,"\\'"),ansSafe=answer.replace(/'/g,"\\'");
+  var mn=getMN(q.en);
+  var mnHintHtml=mn?'<button class="hint-toggle-btn" id="hintToggleBtn" onclick="toggleQuizHint()">🧠 연상 힌트 보기</button>'
+    +'<div class="mnemonic-hint-box" id="quizHintBox"><div class="mh-label">💡 연상 이미지 암기법</div>'
+    +'<div class="mh-sound">발음 연상: "'+mn.s+'"</div><div class="mh-story">'+renderStory(mn.t)+'</div></div>':'';
+  document.getElementById('quizArea').innerHTML=hdr
+    +'<div class="score-bar"><span class="score-text">오늘 점수</span><span class="score-num" id="scoreNum">'+qScore+'점 / '+qTotal+'문제</span></div>'
+    +'<div class="progress-track"><div class="progress-fill" id="progressFill" style="width:'+pct+'%"></div></div>'
+    +'<div class="quiz-card">'
+      +'<div class="quiz-hint">'+(quizMode==='en-ko'?'이 영어 단어의 뜻은?':'이 뜻의 영어 단어는?')+'</div>'
+      +'<div class="quiz-meta"><span class="quiz-level '+(LEVEL_CLS[lvl]||'lvl-custom')+'">'+(LEVEL_NAMES[lvl]||'직접')+'</span>'+(isDue(q)?'<span class="sr-tag">🔁 복습</span>':'')+'</div>'
+      +'<div class="quiz-word">'+question+'</div>'
+      +(quizMode==='en-ko'?'<button class="quiz-speak" onclick="speak(\''+enSafe+'\')">🔊 발음 듣기</button>':'')
+      +mnHintHtml
+    +'</div>'
+    +'<div class="options-grid">'+opts.map(function(o){var oS=o.replace(/'/g,"\\'").replace(/"/g,'&quot;');return '<button class="opt-btn" onclick="checkAns(this,\''+oS+'\',\''+ansSafe+'\',\''+enSafe+'\')">'+o+'</button>';}).join('')+'</div>'
+    +'<div class="result-msg" id="resultMsg"></div>'
+    +'<div class="post-mnemonic" id="postMnemonic"></div>'
+    +'<div class="sr-feedback" id="srFeedback"></div>'
+    +'<button class="btn-next" id="nextBtn" onclick="startQuiz()">다음 단어 →</button>';
+}
+function toggleQuizHint(){
+  var box=document.getElementById('quizHintBox'),btn=document.getElementById('hintToggleBtn');
+  if(!box)return;box.classList.toggle('show');btn.textContent=box.classList.contains('show')?'🧠 힌트 닫기':'🧠 연상 힌트 보기';
+}
+function checkAns(btn,chosen,answer,wordEn){
+  if(answered)return;answered=true;qTotal++;
+  var correct=chosen===answer;if(correct)qScore++;
+  var widx=words.findIndex(function(w){return w.en===wordEn;});
+  if(widx>=0){var card=words[widx],sr=calcSR(card,correct);words[widx]=Object.assign({},card,sr,{nextReview:Date.now()+sr.interval*86400000,lastAnswered:Date.now()});}
+  var today=new Date().toDateString();if(lastStreakDate!==today){streak++;lastStreakDate=today;}
+  save();updateStats();
+  document.querySelectorAll('.opt-btn').forEach(function(b){b.disabled=true;if(b.textContent.trim()===answer)b.classList.add('correct');else if(b===btn&&!correct)b.classList.add('wrong');});
+  var rm=document.getElementById('resultMsg');rm.style.display='block';rm.className='result-msg '+(correct?'correct':'wrong');
+  rm.textContent=correct?'🎉 정답! 잘했어요!':'😅 틀렸어요. 정답은 "'+answer+'" 예요.';
+  var mn=getMN(wordEn),pm=document.getElementById('postMnemonic');
+  if(mn&&pm){pm.className='post-mnemonic show';pm.innerHTML='<div class="pm-title">🧠 연상으로 기억해요!</div><div class="pm-sound">발음 연상: "'+mn.s+'"</div><div class="pm-story">'+renderStory(mn.t)+'</div>';}
+  var fb=document.getElementById('srFeedback');
+  if(fb){fb.style.display='block';var uc=words[widx];if(correct){var days=daysUntil(uc);fb.style.color='var(--green)';fb.textContent=days<=1?'내일 다시 복습할게요! 📅':days+'일 후에 다시 복습합니다 📅';}else{fb.style.color='var(--red)';fb.textContent='틀렸으니 내일 꼭 다시 복습해요! 🔁';}}
+  document.getElementById('progressFill').style.width=Math.round((qScore/qTotal)*100)+'%';
+  document.getElementById('scoreNum').textContent=qScore+'점 / '+qTotal+'문제';
+  document.getElementById('nextBtn').style.display='block';
+  if(correct&&quizMode==='en-ko')speak(wordEn);
+}
+load();updateStats();renderList();
+</script>
+</body>
+</html>
